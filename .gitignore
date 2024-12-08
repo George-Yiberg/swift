@@ -1,0 +1,21 @@
+**/target
+**/logs
+
+### IntelliJ IDEA ###
+**/.idea
+
+
+# swift build directory
+**/build
+**/.build
+
+
+# swift release directory
+**/Release
+
+
+# desktop.ini 文件是一个系统可识别的文件， 主要用于存储用户对文件夹的个性设置，如文件夹图标、背景颜色等。
+**/desktop.ini
+
+
+
