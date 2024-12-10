@@ -1,4 +1,5 @@
 ﻿// Console app.
+import _Concurrency
 
 print("Hello, World!")
 
@@ -8,8 +9,6 @@ myVariable = 50
 let myConstant = 42
 print("myVariable:", myVariable, "myVariable:\(myVariable)")
 print("myConstant:", myConstant, "myConstant:\(myConstant)")
-
-
 
 //myConstant = myVariable
 //print("myConstant:%d", myConstant)
@@ -496,7 +495,7 @@ print(operionalSquare?.sideLength)
 
 
 
-enum Rank: Int {
+enum Rank: Int, CaseIterable {
     case ace = 1
     case two, three, four, five, six, seven, eight, nine, ten
     case jeneral, queen, king
@@ -524,6 +523,11 @@ let ace = Rank.ace
 let aceRawValue = ace.rawValue
 print("ace", Rank.ace, ", ace.rawValue:", ace.rawValue)
 
+let rawValue3A = Rank(rawValue: 3)
+let rawValue3B = Rank(rawValue: 3)
+// true
+print("rawValue3A == rawValue3B:", rawValue3A == rawValue3B)
+
 print(Rank.four.compare(rank: Rank.five))
 print(Rank.ace.compare(rank: Rank.five))
 
@@ -544,7 +548,7 @@ if let convertedRank30 = rawValue30 {
     print("Rank(rawValue: 30) is nil")
 }
 
-enum Suit {
+enum Suit: CaseIterable {
     case spades, hearts, diamonds, clubs
 
     func simpleDescription() -> String {
@@ -574,7 +578,404 @@ let heartsDescriptions = hearts.simpleDescription()
 print(hearts)
 print(heartsDescriptions)
 print(hearts.color())
-print(Suit.spades)
+print(Suit.spades.color())
+
+let suitSpadesA = Suit.spades
+let suitSpadesB = Suit.spades
+// true
+print("suitSpadesA == suitSpadesB:", suitSpadesA == suitSpadesB)
+
+
+enum ServerResponse {
+    case result(String, String)
+    case failure(String)
+    case unknown(String, String)
+}
+let success = ServerResponse.result("6:00 am", "8:09 pm")
+let failure = ServerResponse.failure("Out of cheese.")
+let unknown = ServerResponse.unknown("7:00 am", "Unknown exception.")
+
+switch success {
+case let .result(sunrise, sunset):
+    print("Sunrise is at \(sunrise) and sunset is at \(sunset)")
+case let .failure(message):
+    print("Failure... \(message)")
+case let .unknown(time, message):
+    print("time is \(time). the message is \(message)")
+}
+switch failure {
+case let .result(sunrise, sunset) :
+    print("Sunrise is at \(sunrise) and sunset is at \(sunset)")
+case let .failure(message):
+    print("Failure... \(message)")
+case let .unknown(time, message):
+    print("time is \(time). the message is \(message)")
+}
+switch unknown {
+case let .result(sunrise, sunset) :
+    print("Sunrise is at \(sunrise) and sunset is at \(sunset)")
+case let .failure(message):
+    print("Failure... \(message)")
+case let .unknown(time, message):
+    print("time is \(time). the message is \(message)")
+}
+
+struct Card {
+    var rank: Rank
+    var suit: Suit
+
+    func simpleDescription() -> String {
+        return "The \(rank.simpleDescription()) of \(suit.simpleDescription())"
+    }
+
+    func twoSimpleDescription() -> String {
+        return "(" + rank.simpleDescription() + ", " + suit.simpleDescription() + ")"
+    }
+}
+let threeOfSpades = Card(rank: .three, suit: .spades)
+let threeOfSpadesDescription = threeOfSpades.simpleDescription()
+print("threeOfSpadesDescription: \(threeOfSpadesDescription)")
+
+func deckOfCards() -> [Card] {
+    var allCards: [Card] = []
+    for suit in Suit.allCases {
+        for rank in Rank.allCases {
+            allCards.append(Card(rank: rank, suit: suit))
+        }
+    }
+
+    return allCards
+}
+for card in deckOfCards() {
+    print(card.twoSimpleDescription())
+}
+
+func fetchUserID(from server: String) async -> Int {
+    if (server == "primary") {
+        return 97
+    }
+    return 501
+}
+func fetchUsername(from server: String) async -> String {
+    let userID = await fetchUserID(from: server)
+    if userID == 501 {
+        return "John Appleseed"
+    }
+    return "Guest"
+}
+
+func connectUser(to server: String) async {
+    print("connectUser() start")
+    async let userID = fetchUserID(from: server)
+    async let username = fetchUsername(from: server)
+    let greeting = await "Hello \(username), user ID \(userID)"
+    print(greeting)
+    print("connectUser() end")
+}
+
+print("before task")
+let myTask = Task (priority: .high) {
+    print("before await connectUser(to: \"primary\")")
+    await connectUser(to: "primary")
+    print("after await connectUser(to: \"primary\")")
+}
+print("after task")
+
+await myTask.value
+
+let userIDs = await withTaskGroup(of: Int.self) { group in
+    for server in ["primary", "secondary", "development", ""] {
+        group.addTask {
+            return await fetchUserID(from: server)
+        }
+    }
+
+    var resultArray: [Int] = []
+    for await result in group {
+        resultArray.append(result)
+    }
+
+    return resultArray
+}
+
+print(userIDs)
+
+
+actor ServerConnection {
+    var server: String = "primary"
+    private var activeUsers: [Int] = []
+    func connect() async -> Int {
+        let userID = await fetchUserID(from: server)
+        // ... communicate with server ...
+        activeUsers.append(userID)
+        return userID
+    }
+}
+
+let server = ServerConnection()
+let userID = await server.connect()
+print(userID)
+
+
+// 协议本身只是接口，实际上并不实现任何功能。但协议自身可以作为一种类型使用。它们可以像其他普通类型一样用在函数、方法或构造器中的参数类型或返回值类型，也可以用作常量、变量或属性的类型。
+protocol ExampleProtocol {
+     var simpleDescription: String { get }
+     mutating func adjust()
+     mutating func getDescription() -> String
+}
+class SimpleClass: ExampleProtocol {
+     var simpleDescription: String = "A very simple class."
+     var anotherProperty: Int = 69105
+     func adjust() {
+          simpleDescription += "  Now 100% adjusted."
+     }
+     func getDescription() -> String {
+         return simpleDescription
+     }
+}
+var a = SimpleClass()
+a.adjust()
+let aDescription = a.simpleDescription
+print(aDescription,"    ", a.getDescription())
+
+
+struct SimpleStructure: ExampleProtocol {
+     var simpleDescription: String = "A simple structure"
+     mutating func adjust() {
+          simpleDescription += " (adjusted)"
+     }
+     func getDescription() -> String {
+         return simpleDescription
+     }
+}
+var b = SimpleStructure()
+b.adjust()
+let bDescription = b.simpleDescription
+print(bDescription, "    ", b.getDescription())
+
+
+extension ExampleProtocol {
+    func extensionFunction() -> String {
+        return "extension function"
+    }
+}
+
+print(b.extensionFunction())
+
+extension Int: ExampleProtocol {
+    var simpleDescription: String {
+        return "The number \(self)"
+    }
+    mutating func adjust() {
+        self += 42
+    }
+    func getDescription() -> String {
+         return simpleDescription
+     }
+ }
+print(7.simpleDescription)
+// Prints "The number 7"
+
+
+extension Double {
+    static var absoluteValue: Double {
+        get {
+            print("Double get")
+            // 这里 不论是 c 还是 self.c 都会造成 crash  原因是方法的死循环
+//            return absoluteValue < 0 ? absoluteValue * -1 : absoluteValue
+            return 9999
+        }
+        set {
+            print("Double set", newValue)
+//            c  = newValue  造成 crash  原因是方法的死循环
+//            absoluteValue = newValue < 0 ? newValue * -1 : newValue
+//            absoluteValue = -999
+        }
+
+    }
+    func getDescription() -> Double {
+        return self >= 0 ? self : -self
+    }
+}
+let double9:Double = 9.0
+print(double9.getDescription())
+var doubleNegative9:Double = -9.0
+print(doubleNegative9.getDescription())
+
+Double.absoluteValue = -8.0
+
+print(Double.absoluteValue)
+
+
+
+
+enum PrinterError: Error {
+    case outOfPaper
+    case noToner
+    case onFire
+}
+
+// toPrinter是参数标签。 参数标签的使用能够让一个函数在调用时更有表达力，更类似自然语言，并且仍保持了函数内部的可读性以及清晰的意图。
+func send(job: Int, toPrinter printerName: String) throws -> String {
+    if printerName == "Never Has Toner" {
+        throw PrinterError.noToner
+    }
+
+    return "\(job) sent"
+}
+
+do {
+    let printerResponse = try send(job: 1040, toPrinter: "Bi Sheng")
+    print(printerResponse)
+} catch {
+    print(error)
+}
+do {
+    let printerResponse = try send(job: 1040, toPrinter: "Never Has Toner")
+    print(printerResponse)
+} catch {
+    print("A error was catched: ", error)
+}
+
+do {
+    let printerResponse = try send(job: 1440, toPrinter: "Gutenberg")
+    print(printerResponse)
+} catch PrinterError.onFire {
+    print("I'll just put this over here, with the rest of the fire.")
+} catch let printerError as PrinterError {
+    print("Printer error: \(printerError).")
+} catch {
+    print(error)
+}
+
+do {
+    throw PrinterError.onFire
+    let printerResponse = try send(job: 1440, toPrinter: "Gutenberg")
+    print(printerResponse)
+} catch PrinterError.onFire {
+    print("I'll just put this over here, with the rest of the fire.")
+} catch let printerError as PrinterError {
+    print("Printer error: \(printerError).")
+} catch {
+    print(error)
+}
+
+let printerSuccess = try? send(job: 1884, toPrinter: "Mergenthaler")
+let printerFailure = try? send(job: 1885, toPrinter: "Never Has Toner")
+print(printerSuccess)
+print(printerFailure)
+
+
+var fridgeIsOpen = false
+let fridgeContent = ["milk", "eggs", "leftovers"]
+
+
+func fridgeContains(_ food: String) -> Bool {
+    fridgeIsOpen = true
+    defer {
+        fridgeIsOpen = false
+    }
+
+
+    let result = fridgeContent.contains(food)
+    return result
+}
+if fridgeContains("banana") {
+    print("Found a banana")
+}
+print(fridgeIsOpen)
+// Prints "false"
+
+func fridgeContainsError(_ food: String) throws -> Bool {
+    fridgeIsOpen = true
+    defer {
+    print("defer")
+        fridgeIsOpen = false
+    }
+
+
+    let result = fridgeContent.contains(food)
+    if !result {
+        throw PrinterError.outOfPaper
+    }
+    print("before return")
+    return result
+}
+do {
+    if try fridgeContainsError("banana") {
+        print("Found a banana")
+    }
+} catch {
+    print(error)
+}
+print(fridgeIsOpen)
+
+// Prints "false"
+
+
+func makeArray<Item>(repeating item: Item, numberOfTimes: Int) -> [Item] {
+    var result: [Item] = []
+    for _ in 0..<numberOfTimes {
+         result.append(item)
+    }
+    return result
+}
+print(makeArray(repeating: "knock", numberOfTimes: 4))
+
+// Reimplement the Swift standard library's optional type
+enum OptionalValue<Wrapped> {
+    case none
+    case some(Wrapped)
+}
+var possibleInteger: OptionalValue<Int> = .none
+print(possibleInteger)
+possibleInteger = .some(100)
+print(possibleInteger)
+
+
+
+func anyCommonElements<T: Sequence, U: Sequence>(_ firstParameter: T, _ secondParameter: U) -> Bool
+    where T.Element: Equatable, T.Element == U.Element
+{
+    for firstElement in firstParameter {
+        for secondElement in secondParameter {
+            if firstElement == secondElement {
+                return true
+            }
+        }
+    }
+   return false
+}
+var anyCommonElementResult = anyCommonElements([1, 2, 3], [3])
+print(anyCommonElementResult)
+anyCommonElementResult = anyCommonElements([1, 2, 3], [8])
+print(anyCommonElementResult)
+
+func anyCommonElementArray<T: Sequence, U: Sequence>(_ firstParameter: T, _ secondParameter: U) -> [T.Element]
+    where T.Element: Equatable, T.Element == U.Element
+{
+    var elements: [T.Element] = []
+    for firstElement in firstParameter {
+        for secondElement in secondParameter {
+            if firstElement == secondElement {
+                elements.append(firstElement)
+            }
+        }
+    }
+   return elements
+}
+
+var anyCommonElementResult2 = anyCommonElementArray([1, 2, 3], [3])
+print(anyCommonElementResult2)
+anyCommonElementResult2 = anyCommonElementArray([1, 2, 3], [8])
+print(anyCommonElementResult2)
+
+
+
+
+
+
+
 
 
 
