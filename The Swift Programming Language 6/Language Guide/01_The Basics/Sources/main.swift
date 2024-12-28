@@ -105,6 +105,191 @@ let oneMillion = 1_000_000
 let justOverOneMillion = 1_000_000.000_000_1
 print(paddedDouble, ",  ",oneMillion, ",  ", justOverOneMillion)
 
+/*
+let tooBig: Int8 = Int8.max + 1
+print(tooBig)
+// When building, The error shows: Integer literal 128 overflows when stored into Int8
+var tooLarge: Int8 = 128
+print(tooLarge)
+*/
+
+let twoThousand: UInt16 = 2_000
+let one: UInt8 = 1
+let twoThousandAndOne = twoThousand + UInt16(one)
+print("twoThousandAndOne", twoThousandAndOne)
+
+/*
+swift 不能捕获未主动抛出的异常。  比如数组越界， 空指针等
+// error occurs in runtime.  exited with code
+let defaultTwoThousandAndOne = try (UInt8(twoThousand) + one)
+print(defaultTwoThousandAndOne)
+*/
+
+let three = 3
+let pointOneFourOneFiveNine = 0.14159
+// Binary operator '+' cannot be applied to operands of type 'Double' and 'Int'
+//let pi = pointOneFourOneFiveNine + three
+let pi = Double(three) + pointOneFourOneFiveNine
+print(pi)
+let integerPi: Int = Int(pi)
+print("integerPi: ", integerPi)
+
+let numericAddition = 3 + 0.14159
+print(numericAddition)
+
+typealias AudioSample = UInt16
+var maxAmplitudeFound = AudioSample.min
+print("maxAmplitudeFound:", maxAmplitudeFound)
+
+let orangeAreOrange = true
+let turnipsAreDelicious = false
+print("orangeAreOrange:", orangeAreOrange, "turnipsAreDelicious:", turnipsAreDelicious)
+
+if turnipsAreDelicious {
+    print("Mmm, tasty turnips!")
+} else {
+    print("Eww, turnips are horrible.")
+}
+
+let http404Error = (404, "Not Found")
+print("http404Error:", http404Error)
+
+let (statusCode, statusMessage) = http404Error
+print("The status code is \(statusCode). The status message is \(statusMessage)")
+print("The status code is \(http404Error.0). The status message is \(http404Error.1)")
+
+let http200Status = (statusCode: 200, description: "OK")
+print("The status code is \(http200Status.statusCode). This status message is \(http200Status.description)")
+
+//You use optionals in situations where a value may be absent.
+//An optional represents two possibilities:
+//Either there is a value of a specified type, and you can unwrap the optional to access that value,
+//or there isn’t a value at all.
+
+let possibleNumber = "123"
+let convertedNumber: Int?
+convertedNumber = Int(possibleNumber)
+print("convertedNumber: \(convertedNumber)")
+
+let integerValue: Int
+// Value of optional type 'Int?' must be unwrapped to a value of type 'Int'
+// integerValue = Int(possibleNumber)
+
+// serverResponse: Optional(404)
+var serverResponse: Int? = 404
+print("serverResponse: \(serverResponse)")
+serverResponse = nil
+print("serverResponse: \(serverResponse)")
+
+// serverResponse: Optional(505)
+serverResponse = 500
+print("serverResponse: \(serverResponse)")
+
+
+//If you define an optional variable without providing a default value, the variable is automatically set to nil:
+
+var surveyAnswer: String?
+// surveyAnswer is automatically set to nil
+print("default optional String: \(surveyAnswer)")
+if surveyAnswer == nil {
+    print("The default optional value is nil")
+}
+
+let defaultValueInt: Int?
+// Constant 'defaultValueInt' used before initialized
+//print("default optional Int: \(defaultValueInt)")
+
+
+if convertedNumber != nil {
+    print("convertedNumber contains some integer value.")
+}
+
+surveyAnswer = "abc"
+surveyAnswer = nil
+print("default optional String: \(surveyAnswer)")
+
+if let actualNumber = Int("123") {
+    print("actualNumber is \(actualNumber).")
+} else {
+    print("actualNumber doesn't exist.")
+}
+if let actualNumber = Int("perserverance") {
+    print("actualNumber is \(actualNumber).")
+} else {
+    print("actualNumber doesn't exist.")
+}
+
+// If you don’t need to refer to the original, optional constant or variable after accessing the value it contains, you can use the same name for the new constant or variable:
+let myNumber = Int("perserverance")
+// Here, myNumber is an optional integer
+if let myNumber = myNumber {
+    // Here, myNumber is a non-optional integer
+    print("My number is \(myNumber)")
+}
+// Prints "My number is 123"
+
+if let myNumber {
+    print("My number is \(myNumber)")
+}
+// Prints "My number is 123"
+
+let friendName: String! = nil
+let greeting = "Hello, " + (friendName ?? "friend") + "!"
+print(greeting)
+
+
+
+let numberTemp1 = Int("1234")!
+guard let numberTemp2: Int? = Int("1234")! else {
+    fatalError("The number was invalid")
+}
+print("numberTemp1:", numberTemp1, "numberTemp2:", numberTemp2)
+
+// _1_The_Basics.exe exited with code -1073741795
+//let numberTemp3 = Int("perseverance")!
+
+//_1_The_Basics.exe exited with code -1073741795
+//guard let numberTemp4: Int? = Int("perseverance")! else {
+//    fatalError("The number was invalid")
+//}
+
+var possibleString: String? = "An optional string."
+let forcedString: String = possibleString! // Requires explicit unwrapping
+print("forcedString: \(forcedString)")
+possibleString = nil
+print("possibleString: \(possibleString)")
+
+var assumedString: String! = "An implicitly unwrapped optional string."
+let implicitString: String = assumedString // Unwrapped automatically
+print("implicitString: \(implicitString)")
+assumedString = nil
+print("assumedString: \(assumedString)")
+
+
+let age = -3
+assert(age >= 0, "A person's age can't be less than zero.")
+// This assertion fails because -3 isn't >= 0.
+
+if age > 10 {
+    print("You can ride the roller-coaster or the ferris wheel.")
+} else if age >= 0 {
+    print("You can ride the ferris wheel.")
+} else {
+    assertionFailure("A person's age can't be less than zero.")
+}
+
+// If you compile in unchecked mode (-Ounchecked), preconditions aren’t checked. The compiler assumes that preconditions are always true, and it optimizes your code accordingly.
+
+//precondition(age >= 0, "A person's age can't be less than zero.")
+if age > 10 {
+    print("You can ride the roller-coaster or the ferris wheel.")
+} else if age >= 0 {
+    print("You can ride the ferris wheel.")
+} else {
+    preconditionFailure("A person's age can't be less than zero.")
+}
+
+
 
 
 
