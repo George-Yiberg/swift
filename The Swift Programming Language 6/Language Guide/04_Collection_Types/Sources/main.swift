@@ -62,3 +62,16 @@ for (index, value) in shoppingList.enumerated() {
     print("Item \(index + 1): \(value)", terminator: ", ")
 }
 
+
+var letters = Set<Character>()
+print("letters is of type Set<Character> with \(letters.count) items.")
+
+letters.insert("a")
+letters.insert("b")
+for letter in letters {
+    print("letter:\(letter)", terminator: " ")
+}
+letters = []
+print("letters is of type Set<Character> with \(letters.count) items.")
+
+
